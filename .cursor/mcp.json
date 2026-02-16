@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "paper-search": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "paper_search_mcp.server"
+      ]
+    },
+    "pdf-reader": {
+      "command": "npx",
+      "args": [
+        "@sylphx/pdf-reader-mcp"
+      ]
+    }
+  }
+}

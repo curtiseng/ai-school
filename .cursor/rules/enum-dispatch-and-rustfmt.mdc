@@ -1,0 +1,68 @@
+---
+description: enum_dispatch 与 cargo fmt 的兼容性陷阱，以及 protobuf 生成代码的格式化保护
+globs: "**/*.rs"
+alwaysApply: false
+---
+
+# enum_dispatch 与 cargo fmt 的兼容性
+
+## 问题
+
+`enum_dispatch` 宏对模块编译顺序敏感。它会在**第二个被处理的文件**中生成 `impl Trait for Enum` 代码。
+而 `cargo fmt` 默认按字母序重排 `pub mod` 声明（`reorder_modules = true`），可能导致 trait 和 enum 的处理顺序翻转，从而编译失败。
+
+## 规则
+
+### 1. enum_dispatch 的 trait 定义文件必须导入所有相关类型
+
+在标注了 `#[enum_dispatch]` 的 trait 所在文件中，必须导入 enum 本身及其所有变体类型，确保不管模块顺序如何都能编译。
+
+```rust
+// ❌ BAD — data_type.rs 只导入了 trait 自身依赖，缺少 enum 和变体类型
+use crate::datatypes::type_id::TypeId;
+
+#[enum_dispatch]
+pub trait DataType { ... }
+```
+
+```rust
+// ✅ GOOD — 完整导入 enum 和所有变体类型
+use crate::datatypes::concrete::ConcreteDataType;
+use crate::datatypes::type_id::TypeId;
+use crate::datatypes::types::{
+    ArrayType, BinaryType, BooleanType, /* ... 所有变体 */
+};
+
+#[enum_dispatch]
+pub trait DataType { ... }
+```
+
+### 2. rustfmt.toml 中禁止模块重排
+
+```toml
+reorder_modules = false
+```
+
+### 3. protobuf 生成的代码文件用 `#[rustfmt::skip]` 保护
+
+在引入生成代码的 `mod.rs` 中加 skip 标注，防止 `cargo fmt` 改动机器生成的代码：
+
+```rust
+// ✅ GOOD
+#[rustfmt::skip]
+pub mod arrowsimple;  // protobuf 生成的代码
+```
+
+## 典型故障场景
+
+```
+error[E0412]: cannot find type `NullType` in this scope
+  --> crates/store-types/src/datatypes/data_type.rs:15:1
+   |
+15 | #[enum_dispatch]
+   | ^^^^^^^^^^^^^^^^ not found in this scope
+```
+
+看到此错误时，检查：
+1. trait 文件是否缺少 enum/变体类型的导入
+2. `mod.rs` 中的模块声明顺序是否被 `cargo fmt` 打乱
