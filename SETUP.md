@@ -113,8 +113,8 @@ docker compose up -d
 
 | 服务 | 端口 | 用途 |
 |------|------|------|
-| PostgreSQL 17 | `5432` | 世界状态、事件日志、快照存储 |
-| Qdrant v1.13 | `6333` (REST) / `6334` (gRPC) | 记忆向量检索 |
+| PostgreSQL 17 | `15432` | 世界状态、事件日志、快照存储 |
+| Qdrant v1.13 | `16333` (REST) / `16334` (gRPC) | 记忆向量检索 |
 
 ### 验证服务
 
@@ -124,7 +124,7 @@ docker compose exec postgres pg_isready
 # 预期输出: /var/run/postgresql:5432 - accepting connections
 
 # Qdrant
-curl http://localhost:6333/healthz
+curl http://localhost:16333/healthz
 # 预期输出: 空白（HTTP 200）
 ```
 
@@ -169,10 +169,10 @@ ZHIPU_EMBEDDING_BASE_URL=https://open.bigmodel.cn/api/paas/v4
 ZHIPU_EMBEDDING_MODEL=embedding-3
 
 # PostgreSQL（与 docker-compose.yml 一致即可）
-DATABASE_URL=postgres://ai_school:dev_password@localhost:5432/ai_school
+DATABASE_URL=postgres://ai_school:dev_password@localhost:15432/ai_school
 
 # Qdrant
-QDRANT_URL=http://localhost:6333
+QDRANT_URL=http://localhost:16333
 
 # Server
 API_HOST=0.0.0.0
@@ -386,7 +386,7 @@ cargo watch -x test                  # 文件变更自动测试
 
 ### Q: Docker 端口冲突
 
-如果 5432 或 6333 端口已被占用，修改 `docker-compose.yml` 中的端口映射，并同步更新 `.env` 文件。
+如果 15432 或 16333 端口已被占用，修改 `docker-compose.yml` 中的端口映射，并同步更新 `.env` 文件。
 
 ### Q: `cargo build` 非常慢
 

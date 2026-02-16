@@ -77,7 +77,7 @@ pub struct QdrantConfig {
 impl Default for QdrantConfig {
     fn default() -> Self {
         Self {
-            url: "http://localhost:6333".to_string(),
+            url: "http://localhost:16333".to_string(),
             vector_size: 2048, // 智谱 embedding-3
         }
     }
@@ -92,7 +92,7 @@ pub struct DatabaseConfig {
 impl Default for DatabaseConfig {
     fn default() -> Self {
         Self {
-            url: "postgres://ai_school:dev_password@localhost:5432/ai_school".to_string(),
+            url: "postgres://ai_school:dev_password@localhost:15432/ai_school".to_string(),
         }
     }
 }

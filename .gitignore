@@ -27,3 +27,4 @@ frontend/.next/
 
 # Logs
 *.log
+result.json
