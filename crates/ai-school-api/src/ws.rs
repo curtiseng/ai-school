@@ -3,7 +3,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::state::AppState;
 
@@ -30,10 +30,15 @@ async fn handle_socket(mut socket: WebSocket, state: AppState) {
             update = rx.recv() => {
                 match update {
                     Ok(update) => {
-                        let json = serde_json::to_string(&format!("{:?}", update))
-                            .unwrap_or_default();
-                        if socket.send(Message::Text(json.into())).await.is_err() {
-                            break;
+                        match serde_json::to_string(&update) {
+                            Ok(json) => {
+                                if socket.send(Message::Text(json.into())).await.is_err() {
+                                    break;
+                                }
+                            }
+                            Err(e) => {
+                                warn!(error = %e, "Failed to serialize SimulationUpdate");
+                            }
                         }
                     }
                     Err(_) => {

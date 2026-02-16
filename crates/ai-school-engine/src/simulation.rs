@@ -292,6 +292,6 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
     /// 设置仿真速度
     pub fn set_speed(&mut self, speed: SimulationSpeed) {
         self.speed = speed;
-        let _ = self.event_tx.send(SimulationUpdate::SpeedChanged(speed));
+        let _ = self.event_tx.send(SimulationUpdate::SpeedChanged { speed });
     }
 }

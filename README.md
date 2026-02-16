@@ -1,5 +1,7 @@
 # AI School
 
+[English](README_EN.md) | 中文
+
 > 用 AI 模拟一所学校，观察学生如何成长。
 
 ## 愿景
@@ -11,6 +13,54 @@
 每个 AI 学生拥有独立的人格、记忆和目标。他们上课、交友、争论、迷茫、成长——所有行为不是预编程的，而是从个体交互中自然**涌现**的。我们通过观察这些涌现行为，研究学生身心发展与职业匹配的规律。
 
 这不是一个教育游戏，而是一个**研究工具**。我们相信，理解了虚拟学生的成长规律，就能更好地陪伴真实的孩子。
+
+## 快速开始
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/your-org/ai-school.git && cd ai-school
+
+# 2. 配置环境变量
+cp .env.example .env
+# 编辑 .env，填入 DeepSeek 和智谱 API Key
+
+# 3. 启动基础设施
+docker compose up -d
+
+# 4. 构建前端
+cd frontend && npm install && npx vite build && cd ..
+
+# 5. 启动服务
+cargo run --bin ai-school-api
+
+# 6. 打开浏览器
+open http://localhost:3000
+```
+
+详细配置步骤见 [SETUP.md](SETUP.md)。
+
+## 界面预览
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  [⚡] AI SCHOOL    [▶ Start] [⏸ Pause] [1x ▾]    Day 15 │
+├──────────┬──────────────────────────┬────────────────────┤
+│          │                          │                    │
+│  Agent   │    2D Campus Map         │   Detail / Chat    │
+│  List    │    (React-Konva)         │   Panel            │
+│          │                          │                    │
+│  小明    │  ┌────┐  ┌────┐         │  [MBTI] ESTP       │
+│  ESTP    │  │教室│  │图书│         │  [情绪] ██████░    │
+│  学习中  │  └────┘  └────┘         │  [能力] ████░░     │
+│          │    @  @  @               │                    │
+│  小红    │  ┌────┐  ┌────┐         │  "老师好，我最近   │
+│  INFJ    │  │操场│  │食堂│         │   在考虑..."       │
+│  社交中  │  └────┘  └────┘         │  [发送消息...]     │
+│          │                          │                    │
+├──────────┴──────────────────────────┴────────────────────┤
+│  [Intervention]  难度:████░░  社交:██████░  [Events ▾]   │
+└──────────────────────────────────────────────────────────┘
+```
 
 ## 两个阶段
 
@@ -31,6 +81,32 @@ AI School
 ├── M4. 记忆与成长系统        ← 多层记忆、身心追踪、人格演变
 ├── M5. 研究与分析平台        ← 轨迹可视化、职业匹配、实验对照
 └── M6. 学生陪伴机器人        ← Phase 2：画像建模、健康陪伴、职业引导
+```
+
+## 技术栈
+
+### 后端
+
+- **语言**：Rust（并发安全、长期运行稳定性、严格类型系统）
+- **Web 框架**：Axum（HTTP + WebSocket）
+- **LLM**：DeepSeek（Agent 决策 + GM 仲裁）+ 智谱 AI（记忆向量化）
+- **存储**：PostgreSQL（结构化数据）+ Qdrant（向量记忆检索）
+- **架构**：Cargo Workspace 8 个 crate，模块间通过 trait 抽象解耦
+
+### 前端
+
+- **框架**：React + TypeScript + Vite
+- **2D 渲染**：React-Konva（Canvas 校园地图）
+- **状态管理**：Zustand + WebSocket 实时同步
+- **样式**：Tailwind CSS（暗色研究实验室主题）
+- **图表**：Recharts
+
+### 数据流
+
+```
+用户操作 → REST API → 仿真引擎 → LLM 调用 → 状态更新
+                                              ↓
+                              WebSocket ← 广播更新 → 前端实时渲染
 ```
 
 ## 研究基础
@@ -84,24 +160,29 @@ NetworkGames (2025) 进一步揭示：宏观合作水平无法从双人交互预
 
 详见 [`docs/research/`](docs/research/) 目录。
 
-## 技术栈
-
-- **语言**：Rust（并发安全、长期运行稳定性、严格类型系统）
-- **LLM**：API 调用为主，支持多模型切换
-- **存储**：PostgreSQL（结构化数据）+ Qdrant（向量记忆检索）
-- **架构**：Cargo Workspace 多 crate，模块间通过 trait 抽象解耦
-
 ## 文档
 
 | 文档 | 说明 |
 |------|------|
+| [`SETUP.md`](SETUP.md) | 从零开始的环境配置与启动指南 |
 | [`docs/research/`](docs/research/) | 34 篇论文的研究综述与深度分析 |
 | [`docs/prd/`](docs/prd/) | 产品需求框架与各模块 PRD |
 | [`docs/adr/`](docs/adr/) | 架构决策记录（ADR） |
 
 ## 开发状态
 
-🚧 **早期阶段** — 正在从研究和架构设计走向 P0 模块实现。
+**Phase 1a MVP** — 核心仿真引擎 + Web 交互层已完成：
+
+- [x] M1: 学生 Agent 系统（人格、认知、职业）
+- [x] M2: 学校世界系统（校园、时间、课程、社交）
+- [x] M3: 演化引擎（仿真循环、GM 仲裁、干预系统）
+- [x] M4: 记忆系统（多层记忆、向量检索、反思触发）
+- [x] LLM 集成（DeepSeek 补全 + 智谱嵌入）
+- [x] HTTP/WebSocket API（15 个端点）
+- [x] Web UI（2D 校园地图、Agent 管理、对话、干预、数据导出）
+- [x] M5: 研究分析平台（图表可视化、实验对照）
+- [x] 持久化存储（PostgreSQL + Qdrant 集成）
+- [ ] 大规模仿真优化（50+ Agent）
 
 ## License
 
