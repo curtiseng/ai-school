@@ -39,6 +39,10 @@ open http://localhost:3000
 
 详细配置步骤见 [SETUP.md](SETUP.md)。
 
+## 演示视频
+
+<video src="assert/demo.mp4" controls width="100%"></video>
+
 ## 界面预览
 
 ```

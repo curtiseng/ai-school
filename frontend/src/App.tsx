@@ -4,6 +4,7 @@ import { AgentList } from './components/AgentList';
 import { CampusMap } from './components/CampusMap';
 import { DetailPanel } from './components/DetailPanel';
 import { BottomBar } from './components/BottomBar';
+import { EventToast } from './components/EventToast';
 import { useSimulationStore } from './stores/simulation';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
         <DetailPanel />
       </div>
       <BottomBar />
+      <EventToast />
     </div>
   );
 }

@@ -1,9 +1,29 @@
 import { create } from 'zustand';
 import type {
   Agent, AgentDetail, SimulationTime, SimulationSpeed,
-  SimulationEvent, SimulationUpdate, WorldSnapshot,
+  SimulationEvent, SimulationUpdate, WorldSnapshot, PersonalityParams,
 } from '../types';
 import { api } from '../api/client';
+
+/** Derive MBTI label from personality dimensions (mirrors Rust mbti_label()) */
+function deriveMbtiLabel(p: PersonalityParams): string {
+  if (p.mbti) return p.mbti;
+  const ei = p.e_i < 0 ? 'E' : 'I';
+  const sn = p.s_n < 0 ? 'S' : 'N';
+  const tf = p.t_f < 0 ? 'T' : 'F';
+  const jp = p.j_p < 0 ? 'J' : 'P';
+  return `${ei}${sn}${tf}${jp}`;
+}
+
+/** Extract activity type string from Rust enum JSON (e.g. "Resting" or {"Studying":{"subject":"数学"}} → "Studying") */
+function parseActivity(activity: unknown): Agent['activity'] {
+  if (typeof activity === 'string') return activity as Agent['activity'];
+  if (activity && typeof activity === 'object') {
+    const key = Object.keys(activity)[0];
+    if (key) return key as Agent['activity'];
+  }
+  return 'Resting';
+}
 
 interface SimulationStore {
   // Connection
@@ -90,9 +110,9 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
             const agents: Agent[] = agentEntries.map((a) => ({
               id: typeof a.id === 'string' ? a.id : (a.id as { Uuid?: string })?.Uuid || String(a.id),
               name: a.config.name,
-              mbti: a.config.personality.mbti || '',
+              mbti: deriveMbtiLabel(a.config.personality),
               location: typeof a.location === 'string' ? a.location : String(a.location),
-              activity: a.activity as Agent['activity'],
+              activity: parseActivity(a.activity),
               emotion: a.emotion,
               career: a.config.career_aspiration.ideal_career,
               personality: a.config.personality,

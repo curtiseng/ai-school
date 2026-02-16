@@ -109,7 +109,14 @@ impl GameMaster {
 
         let intents_desc: String = intents
             .iter()
-            .map(|i| format!("- Agent {}: {}", i.agent_id, i.description))
+            .map(|i| {
+                let name = world
+                    .agents
+                    .get(&i.agent_id)
+                    .map(|a| a.config.name.as_str())
+                    .unwrap_or("未知");
+                format!("- {name}: {}", i.description)
+            })
             .collect::<Vec<_>>()
             .join("\n");
 

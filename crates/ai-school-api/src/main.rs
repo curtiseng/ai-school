@@ -91,10 +91,12 @@ async fn main() -> Result<()> {
         memory_store.clone(),
         config.simulation.clone(),
     );
+    let running_flag = runner.running_flag();
 
     let app_state = AppState {
         runner: Arc::new(RwLock::new(runner)),
         config: config.clone(),
+        running: running_flag,
     };
 
     // Serve frontend static files from frontend/dist/ (fallback to index.html for SPA)

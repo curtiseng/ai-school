@@ -39,6 +39,10 @@ open http://localhost:3000
 
 For detailed setup instructions, see [SETUP.md](SETUP.md).
 
+## Demo Video
+
+<video src="assert/demo.mp4" controls width="100%"></video>
+
 ## UI Preview
 
 ```

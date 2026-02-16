@@ -1,3 +1,5 @@
+use std::sync::atomic::Ordering;
+
 use axum::extract::State;
 use axum::routing::{get, post, put};
 use axum::{Json, Router};
@@ -17,27 +19,45 @@ pub fn router() -> Router<AppState> {
 }
 
 async fn get_status(State(state): State<AppState>) -> Json<SimulationStatusResponse> {
-    let runner = state.runner.read().await;
-    let time = runner.world.clock.current_time();
+    // running flag is read lock-free via AtomicBool
+    let is_running = state.running.load(Ordering::Relaxed);
 
-    Json(SimulationStatusResponse {
-        running: runner.running,
-        tick: time.tick,
-        time_display: time.display(),
-        agent_count: runner.world.agents.len(),
-        speed: runner.speed,
-    })
+    // Try to get read lock with timeout for other fields
+    match tokio::time::timeout(
+        tokio::time::Duration::from_millis(100),
+        state.runner.read(),
+    )
+    .await
+    {
+        Ok(runner) => {
+            let time = runner.world.clock.current_time();
+            Json(SimulationStatusResponse {
+                running: is_running,
+                tick: time.tick,
+                time_display: time.display(),
+                agent_count: runner.world.agents.len(),
+                speed: runner.speed,
+            })
+        }
+        Err(_) => {
+            // Runner is busy (write-locked by simulation loop), return partial status
+            Json(SimulationStatusResponse {
+                running: is_running,
+                tick: 0,
+                time_display: "运行中...".to_string(),
+                agent_count: 0,
+                speed: SimulationSpeed::Normal,
+            })
+        }
+    }
 }
 
 async fn start_simulation(State(state): State<AppState>) -> Json<SuccessResponse> {
-    let mut runner = state.runner.write().await;
-    runner.set_speed(SimulationSpeed::Normal);
-    runner.running = true;
-
     // Spawn simulation loop in background
     let runner_clone = state.runner.clone();
     tokio::spawn(async move {
         let mut runner = runner_clone.write().await;
+        runner.set_speed(SimulationSpeed::Normal);
         if let Err(e) = runner.run().await {
             tracing::error!(error = %e, "Simulation error");
         }
@@ -50,8 +70,9 @@ async fn start_simulation(State(state): State<AppState>) -> Json<SuccessResponse
 }
 
 async fn stop_simulation(State(state): State<AppState>) -> Json<SuccessResponse> {
-    let mut runner = state.runner.write().await;
-    runner.stop();
+    // Directly set the AtomicBool — no lock needed at all
+    state.running.store(false, Ordering::Relaxed);
+    tracing::info!("Stop signal sent");
 
     Json(SuccessResponse {
         success: true,

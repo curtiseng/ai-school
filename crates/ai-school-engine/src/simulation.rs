@@ -2,6 +2,7 @@
 //!
 //! 核心编排层：协调 Agent 决策、GM 仲裁、状态更新、记忆写入。
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use tokio::sync::broadcast;
@@ -41,7 +42,8 @@ pub struct SimulationRunner<L: LlmProvider, M: MemoryStore> {
     pub game_master: GameMaster,
     pub reflection_trigger: ReflectionTrigger,
     pub event_tx: broadcast::Sender<SimulationUpdate>,
-    pub running: bool,
+    /// Shared atomic flag — can be set from outside without holding the RwLock
+    pub running: Arc<AtomicBool>,
 }
 
 impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
@@ -61,7 +63,7 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
             game_master: GameMaster::new(),
             reflection_trigger: ReflectionTrigger::new(config.reflection_threshold),
             event_tx,
-            running: false,
+            running: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -88,6 +90,9 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
         for te in &time_events {
             debug!(event = ?te, "Time event triggered");
         }
+
+        // 1b. 处理时间事件 → 移动 Agent 到对应位置
+        self.world.process_time_events(&time_events);
 
         // 2. 为每个活跃 Agent 构建 SituationContext 并执行决策
         let agent_ids: Vec<AgentId> = self.world.agents.keys().cloned().collect();
@@ -258,12 +263,22 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
         }
     }
 
+    /// Get a clone of the running flag (for the stop handler to use without the write lock)
+    pub fn running_flag(&self) -> Arc<AtomicBool> {
+        self.running.clone()
+    }
+
+    /// Check if running
+    pub fn is_running(&self) -> bool {
+        self.running.load(Ordering::Relaxed)
+    }
+
     /// 运行仿真主循环
     pub async fn run(&mut self) -> Result<(), SimulationError> {
-        self.running = true;
+        self.running.store(true, Ordering::Relaxed);
         info!("Simulation started");
 
-        while self.running {
+        while self.running.load(Ordering::Relaxed) {
             if self.speed == SimulationSpeed::Paused {
                 tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
                 continue;
@@ -284,9 +299,9 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
         Ok(())
     }
 
-    /// 停止仿真
-    pub fn stop(&mut self) {
-        self.running = false;
+    /// 停止仿真 (can be called with &self since AtomicBool)
+    pub fn stop(&self) {
+        self.running.store(false, Ordering::Relaxed);
     }
 
     /// 设置仿真速度

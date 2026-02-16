@@ -4,13 +4,16 @@
 
 use std::collections::HashMap;
 
+use rand::seq::SliceRandom;
 use tracing::{debug, warn};
 
 use ai_school_core::error::WorldError;
 use ai_school_core::types::{
-    AgentId, AgentState, ChangeType, Location, LocationId,
+    AgentActivity, AgentId, AgentState, ChangeType, Location, LocationId,
     SimulationEvent, StateChange, WorldSnapshot,
 };
+
+use crate::time::TimeEvent;
 
 use crate::campus::create_default_campus;
 use crate::curriculum::{create_default_schedule, create_default_subjects, ClassSchedule, Subject};
@@ -142,14 +145,17 @@ impl WorldState {
 
         match parts[0] {
             target if target.starts_with("agent:") => {
-                let agent_name = &target[6..];
-                let agent = self
-                    .agents
-                    .values_mut()
-                    .find(|a| a.config.name == agent_name)
-                    .ok_or_else(|| {
-                        WorldError::InvalidStateChange(format!("Agent not found: {agent_name}"))
-                    })?;
+                let agent_key = &target[6..];
+                // Support both name and UUID lookup for robustness
+                let agent = if let Some(a) = self.agents.values_mut().find(|a| a.config.name == agent_key) {
+                    a
+                } else if let Ok(uuid) = uuid::Uuid::parse_str(agent_key) {
+                    self.agents.get_mut(&AgentId(uuid)).ok_or_else(|| {
+                        WorldError::InvalidStateChange(format!("Agent not found: {agent_key}"))
+                    })?
+                } else {
+                    return Err(WorldError::InvalidStateChange(format!("Agent not found: {agent_key}")));
+                };
 
                 match parts[1] {
                     "emotion" if parts.len() > 2 => match parts[2] {
@@ -220,6 +226,117 @@ impl WorldState {
                 ChangeType::Delta => *field = (*field + value as f32).clamp(min, max),
                 ChangeType::Set => *field = (value as f32).clamp(min, max),
                 ChangeType::Append => {} // Not applicable for numeric
+            }
+        }
+    }
+
+    /// 处理时间事件：根据时间段自动移动 Agent 到对应位置
+    pub fn process_time_events(&mut self, events: &[TimeEvent]) {
+        let mut rng = rand::thread_rng();
+
+        for event in events {
+            match event {
+                TimeEvent::ClassStart { period } => {
+                    let time = self.clock.current_time();
+                    let subject = self
+                        .schedule
+                        .iter()
+                        .find(|c| c.day_of_week == time.day_of_week && c.period == *period)
+                        .map(|c| c.subject.clone());
+
+                    if let Some(subject_name) = subject {
+                        let classroom = self
+                            .subjects
+                            .iter()
+                            .find(|s| s.name == subject_name)
+                            .map(|s| s.classroom.clone())
+                            .unwrap_or(LocationId("classroom_math".to_string()));
+
+                        let subject_for_activity = subject_name.clone();
+                        debug!(subject = %subject_name, location = %classroom.0, "Moving agents to class");
+                        for agent in self.agents.values_mut() {
+                            agent.location = classroom.clone();
+                            agent.activity = AgentActivity::Studying {
+                                subject: subject_for_activity.clone(),
+                            };
+                        }
+                    }
+                }
+                TimeEvent::Break => {
+                    let break_locations = [
+                        LocationId("rest_area".to_string()),
+                        LocationId("hallway".to_string()),
+                        LocationId("playground".to_string()),
+                    ];
+                    for agent in self.agents.values_mut() {
+                        let loc = break_locations.choose(&mut rng).unwrap().clone();
+                        agent.location = loc;
+                        agent.activity = AgentActivity::Resting;
+                    }
+                    debug!("Break: agents moved to rest areas");
+                }
+                TimeEvent::LunchBreak | TimeEvent::Dinner => {
+                    for agent in self.agents.values_mut() {
+                        agent.location = LocationId("cafeteria".to_string());
+                        agent.activity = AgentActivity::Resting;
+                    }
+                    debug!("Meal time: agents moved to cafeteria");
+                }
+                TimeEvent::FreeTime => {
+                    let free_locations = [
+                        LocationId("library".to_string()),
+                        LocationId("playground".to_string()),
+                        LocationId("club_room".to_string()),
+                        LocationId("rest_area".to_string()),
+                        LocationId("study_room".to_string()),
+                    ];
+                    for agent in self.agents.values_mut() {
+                        let loc = free_locations.choose(&mut rng).unwrap().clone();
+                        agent.location = loc;
+                        agent.activity = AgentActivity::Activity {
+                            name: "课外活动".to_string(),
+                        };
+                    }
+                    debug!("Free time: agents dispersed to various locations");
+                }
+                TimeEvent::EveningStudy => {
+                    let study_locations = [
+                        LocationId("study_room".to_string()),
+                        LocationId("library".to_string()),
+                        LocationId("classroom_math".to_string()),
+                    ];
+                    for agent in self.agents.values_mut() {
+                        let loc = study_locations.choose(&mut rng).unwrap().clone();
+                        agent.location = loc;
+                        agent.activity = AgentActivity::Studying {
+                            subject: "自习".to_string(),
+                        };
+                    }
+                    debug!("Evening study: agents moved to study areas");
+                }
+                TimeEvent::Bedtime | TimeEvent::NewDay => {
+                    for agent in self.agents.values_mut() {
+                        agent.location = LocationId("dormitory".to_string());
+                        agent.activity = AgentActivity::Resting;
+                    }
+                    debug!("Bedtime: agents moved to dormitory");
+                }
+                TimeEvent::Weekend => {
+                    let weekend_locations = [
+                        LocationId("library".to_string()),
+                        LocationId("playground".to_string()),
+                        LocationId("dormitory".to_string()),
+                        LocationId("rest_area".to_string()),
+                        LocationId("club_room".to_string()),
+                    ];
+                    for agent in self.agents.values_mut() {
+                        let loc = weekend_locations.choose(&mut rng).unwrap().clone();
+                        agent.location = loc;
+                        agent.activity = AgentActivity::Resting;
+                    }
+                    debug!("Weekend: agents dispersed freely");
+                }
+                _ => {}
             }
         }
     }
