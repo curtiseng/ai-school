@@ -41,7 +41,7 @@ For detailed setup instructions, see [SETUP.md](SETUP.md).
 
 ## Demo Video
 
-<video src="assert/demo.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/77620df3-c82f-486a-97ef-960a6133d401
 
 ## UI Preview
 

@@ -41,7 +41,7 @@ open http://localhost:3000
 
 ## 演示视频
 
-<video src="assert/demo.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/77620df3-c82f-486a-97ef-960a6133d401
 
 ## 界面预览
 
