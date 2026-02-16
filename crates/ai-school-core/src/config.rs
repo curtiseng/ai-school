@@ -57,9 +57,9 @@ impl Default for LlmConfig {
             chat_base_url: "https://api.deepseek.com".to_string(),
             chat_api_key: String::new(),
             chat_model: "deepseek-chat".to_string(),
-            embedding_base_url: "https://api.openai.com/v1".to_string(),
+            embedding_base_url: "https://open.bigmodel.cn/api/paas/v4".to_string(),
             embedding_api_key: String::new(),
-            embedding_model: "text-embedding-3-small".to_string(),
+            embedding_model: "embedding-3".to_string(),
             default_temperature: 0.7,
             max_retries: 3,
         }
@@ -78,7 +78,7 @@ impl Default for QdrantConfig {
     fn default() -> Self {
         Self {
             url: "http://localhost:6333".to_string(),
-            vector_size: 1536, // OpenAI text-embedding-3-small
+            vector_size: 2048, // 智谱 embedding-3
         }
     }
 }

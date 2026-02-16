@@ -16,7 +16,7 @@ use ai_school_core::traits::llm::{
 
 /// DeepSeek LLM 提供者 — ADR-0005 选型五
 ///
-/// 使用 DeepSeek 进行 chat 补全，OpenAI 进行 embedding。
+/// 使用 DeepSeek 进行 chat 补全，智谱 AI 进行 embedding。
 pub struct DeepSeekProvider {
     chat_client: Client<OpenAIConfig>,
     embedding_client: Client<OpenAIConfig>,

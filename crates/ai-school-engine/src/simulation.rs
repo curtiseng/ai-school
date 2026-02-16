@@ -167,7 +167,7 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
             limit: 5,
         };
 
-        let dummy_embedding = vec![0.0; 1536]; // TODO: use actual embedding
+        let dummy_embedding = vec![0.0; 2048]; // TODO: use actual embedding
         let memories = self
             .memory_store
             .retrieve(agent_id, &query, &dummy_embedding)
@@ -246,7 +246,7 @@ impl<L: LlmProvider, M: MemoryStore> SimulationRunner<L, M> {
             last_accessed: current_time,
         };
 
-        let dummy_embedding = vec![0.0; 1536]; // TODO: use actual embedding
+        let dummy_embedding = vec![0.0; 2048]; // TODO: use actual embedding
         if let Err(e) = self.memory_store.store(agent_id, &memory, &dummy_embedding).await {
             error!(agent = %agent_id, error = %e, "Failed to store memory");
         }

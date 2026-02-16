@@ -163,9 +163,10 @@ DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx        # ← 必填
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-chat
 
-# Embedding Configuration — OpenAI 用于记忆向量化
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx           # ← 必填
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+# Embedding Configuration — 智谱 AI 用于记忆向量化
+ZHIPU_API_KEY=xxxxxxxxxxxxxxxx               # ← 必填
+ZHIPU_EMBEDDING_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+ZHIPU_EMBEDDING_MODEL=embedding-3
 
 # PostgreSQL（与 docker-compose.yml 一致即可）
 DATABASE_URL=postgres://ai_school:dev_password@localhost:5432/ai_school
@@ -188,7 +189,7 @@ RUST_LOG=ai_school=debug,tower_http=debug
 | 服务 | 获取地址 | 用途 |
 |------|---------|------|
 | DeepSeek | https://platform.deepseek.com/ | Agent 决策 + GM 仲裁 |
-| OpenAI | https://platform.openai.com/api-keys | 记忆向量化（Embedding） |
+| 智谱 AI | https://open.bigmodel.cn/ | 记忆向量化（Embedding） |
 
 ---
 

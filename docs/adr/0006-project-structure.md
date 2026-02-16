@@ -483,7 +483,7 @@ ai-school-memory/
 
 ```
 Collection: {simulation_id}_memories
-├── Vectors: 1536-dim (OpenAI text-embedding-3-small) 或模型适配
+├── Vectors: 2048-dim (智谱 embedding-3) 或模型适配
 ├── Payload Schema:
 │   ├── agent_id: keyword          # Agent 隔离
 │   ├── layer: keyword             # "sensory" | "shortterm" | "longterm" | "semantic"

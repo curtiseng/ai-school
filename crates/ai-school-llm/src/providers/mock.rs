@@ -29,7 +29,7 @@ impl MockLlmProvider {
 
 impl Default for MockLlmProvider {
     fn default() -> Self {
-        Self::new(1536)
+        Self::new(2048)
     }
 }
 

@@ -331,16 +331,16 @@ LLM 调用路由：
 
 | 方案 | 优势 | 劣势 | 适合阶段 |
 |------|------|------|---------|
-| **OpenAI text-embedding-3-small** | 质量高，1536 维，async-openai 直接支持 | 有成本（$0.02/1M tokens），依赖海外 API | MVP 首选 |
-| **硅基流动 / 智谱 Embedding API** | 国内访问稳定，成本较低 | 需 reqwest 封装，质量略低 | 备选 |
+| **智谱 AI embedding-3** | 质量高，2048 维，OpenAI 兼容格式，国内访问稳定，成本低（¥0.5/1M tokens） | 依赖外部 API | **MVP 首选** |
+| OpenAI text-embedding-3-small | 质量高，1536 维，async-openai 直接支持 | 有成本（$0.02/1M tokens），依赖海外 API | 备选 |
 | **本地模型（BGE / GTE via Ollama）** | 零调用成本，无网络依赖 | 需部署 Ollama，初始化慢 | 大规模仿真阶段 |
 
-**MVP 阶段推荐**：DeepSeek（补全）+ OpenAI（嵌入）的组合。两者都通过 `async-openai` 对接，只是 base URL 和 API key 不同，实现简洁：
+**MVP 阶段推荐**：DeepSeek（补全）+ 智谱 AI（嵌入）的组合。两者都兼容 OpenAI API 格式，通过 `async-openai` 对接，只是 base URL 和 API key 不同，实现简洁：
 
 ```rust
 pub struct DeepSeekProvider {
     chat_client: Client<OpenAIConfig>,       // base_url = "https://api.deepseek.com"
-    embedding_client: Client<OpenAIConfig>,  // base_url = "https://api.openai.com/v1"
+    embedding_client: Client<OpenAIConfig>,  // base_url = "https://open.bigmodel.cn/api/paas/v4"
 }
 
 #[async_trait]
@@ -351,7 +351,7 @@ impl LlmProvider for DeepSeekProvider {
     }
 
     async fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
-        // → OpenAI Embedding
+        // → 智谱 AI Embedding
         self.embedding_client.embeddings().create(/*...*/).await
     }
 }
