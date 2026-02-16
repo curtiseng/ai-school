@@ -88,7 +88,7 @@ NetworkGames (2025) 进一步揭示：宏观合作水平无法从双人交互预
 
 - **语言**：Rust（并发安全、长期运行稳定性、严格类型系统）
 - **LLM**：API 调用为主，支持多模型切换
-- **存储**：SQLite（结构化数据）+ Qdrant（向量记忆检索）
+- **存储**：PostgreSQL（结构化数据）+ Qdrant（向量记忆检索）
 - **架构**：Cargo Workspace 多 crate，模块间通过 trait 抽象解耦
 
 ## 文档
