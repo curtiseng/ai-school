@@ -1,0 +1,31 @@
+请基于以下学生的近期经历进行反思性总结。
+
+## 学生信息
+姓名: {{ name }}
+人格类型: {{ mbti }}
+{{ personality_description }}
+
+## 当前时间
+{{ time }}
+
+## 近期经历
+{% for memory in recent_memories %}
+{{ loop.index }}. {{ memory.content }} (重要性: {{ memory.importance }})
+{% endfor %}
+
+## 反思要求
+请从以下角度进行分析：
+1. 这些经历对该学生有什么整体影响？
+2. 学生可能从中获得了什么认知或感悟？
+3. 这些经历是否可能影响学生的性格发展方向？
+
+请用 JSON 格式输出：
+{
+  "summary": "反思总结（2-3句话）",
+  "insight": "核心洞察（1句话）",
+  "personality_impact": {
+    "dimension": "EI/SN/TF/JP",
+    "direction": "positive/negative",
+    "magnitude": 0.01-0.05
+  }
+}

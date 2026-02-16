@@ -1,0 +1,25 @@
+[package]
+name = "ai-school-engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "M3: Evolution engine — simulation loop, GM arbitration, intervention"
+
+[dependencies]
+ai-school-core = { workspace = true }
+ai-school-llm = { workspace = true }
+ai-school-agent = { workspace = true }
+ai-school-world = { workspace = true }
+ai-school-memory = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+tokio-test = { workspace = true }

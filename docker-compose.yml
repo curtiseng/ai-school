@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_DB: ai_school
+      POSTGRES_USER: ai_school
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.0
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  pgdata:
+  qdrant_data:

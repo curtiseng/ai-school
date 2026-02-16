@@ -1,0 +1,11 @@
+[build]
+# Use mold linker on Linux for faster linking (uncomment if available)
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+
+# macOS: use default linker
+
+[env]
+# Default environment variables for development
+RUST_LOG = "ai_school=debug,tower_http=debug"

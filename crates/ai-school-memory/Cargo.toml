@@ -1,0 +1,22 @@
+[package]
+name = "ai-school-memory"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "M4: Memory and growth system — store, retrieval, reflection, evolution"
+
+[dependencies]
+ai-school-core = { workspace = true }
+ai-school-llm = { workspace = true }
+qdrant-client = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio-test = { workspace = true }

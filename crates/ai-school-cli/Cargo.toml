@@ -1,0 +1,21 @@
+[package]
+name = "ai-school-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "CLI tool for batch simulation, data export, and debugging"
+
+[dependencies]
+ai-school-core = { workspace = true }
+ai-school-engine = { workspace = true }
+ai-school-llm = { workspace = true }
+ai-school-agent = { workspace = true }
+ai-school-memory = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+dotenvy = { workspace = true }

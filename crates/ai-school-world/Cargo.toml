@@ -1,0 +1,15 @@
+[package]
+name = "ai-school-world"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "M2: School world system — campus, time, curriculum, social, relationships"
+
+[dependencies]
+ai-school-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }

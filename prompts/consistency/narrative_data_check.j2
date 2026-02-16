@@ -1,0 +1,20 @@
+请检查以下仿真事件的叙事描述与数据变更是否一致。
+
+## 事件叙事
+{{ narrative }}
+
+## 数据变更
+{% for change in state_changes %}
+- {{ change.target }}: {{ change.change_type }} {{ change.value }}
+{% endfor %}
+
+## 检查项
+1. 叙事描述的情绪方向是否与情绪值变化一致？
+2. 叙事描述的关系变化是否与亲密度/信任度变化一致？
+3. 是否存在因果矛盾（如"友好交流"但亲密度下降）？
+
+请用 JSON 输出：
+{
+  "consistent": true/false,
+  "issues": ["问题描述1", "问题描述2"]
+}
